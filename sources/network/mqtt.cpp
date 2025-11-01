@@ -12,7 +12,7 @@ constexpr auto CONNECT_TIMEOUT = std::chrono::seconds(5);
 constexpr auto KEEP_ALIVE = std::chrono::seconds(60);
 
 Mqtt::Mqtt(const Config& config)
-    : m_config(config), m_client(config.mqttUrl(), "sdr-scanner"), m_isRunning(true), m_thread([this, config]() {
+    : m_config(config), m_client(config.mqttUrl(), fmt::format("sdr-scanner-{}", config.getId())), m_isRunning(true), m_thread([this, config]() {
         Logger::info(LABEL, "started");
         connect();
         while (m_isRunning) {
