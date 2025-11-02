@@ -73,9 +73,14 @@ void Mqtt::publish(const std::string& topic, const std::vector<uint8_t>&& data, 
   }
 }
 
-void Mqtt::setMessageCallback(const std::string& topic, std::function<void(const std::string&)> callback) {
+void Mqtt::setRawMessageCallback(const std::string& topic, const RawCallback& callback) {
   subscribe(topic);
-  m_callbacks.emplace_back(topic, callback);
+  m_rawCallbacks.emplace_back(topic, callback);
+}
+
+void Mqtt::setJsonMessageCallback(const std::string& topic, const JsonCallback& callback) {
+  subscribe(topic);
+  m_jsonCallbacks.emplace_back(topic, callback);
 }
 
 void Mqtt::connect() {
@@ -142,9 +147,22 @@ void Mqtt::subscribe(const std::string& topic) {
 
 void Mqtt::onMessage(const std::string& topic, const std::string& data) {
   Logger::debug(LABEL, "topic: {}, data: {}", topic, data);
-  for (auto& [callbackTopic, callback] : m_callbacks) {
+  for (auto& [callbackTopic, callback] : m_rawCallbacks) {
     if (topic == callbackTopic) {
       callback(data);
+    }
+  }
+  const auto count = std::count_if(m_jsonCallbacks.begin(), m_jsonCallbacks.end(), [&topic](const auto& data) { return data.first == topic; });
+  if (0 < count) {
+    try {
+      const auto json = nlohmann::json::parse(data);
+      for (auto& [callbackTopic, callback] : m_jsonCallbacks) {
+        if (topic == callbackTopic) {
+          callback(json);
+        }
+      }
+    } catch (const std::exception& exception) {
+      Logger::warn(LABEL, "parse json exception: {}", colored(RED, "{}", exception.what()));
     }
   }
 }

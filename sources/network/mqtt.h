@@ -14,13 +14,17 @@
 
 class Mqtt {
  public:
+  using RawCallback = std::function<void(const nlohmann::json&)>;
+  using JsonCallback = std::function<void(const nlohmann::json&)>;
+
   Mqtt(const Config& config);
   ~Mqtt();
 
   void publish(const std::string& topic, const std::string& data, int qos = 0);
   void publish(const std::string& topic, const std::vector<uint8_t>& data, int qos = 0);
   void publish(const std::string& topic, const std::vector<uint8_t>&& data, int qos = 0);
-  void setMessageCallback(const std::string& topic, std::function<void(const std::string&)> callback);
+  void setRawMessageCallback(const std::string& topic, const RawCallback& callback);
+  void setJsonMessageCallback(const std::string& topic, const JsonCallback& callback);
 
  private:
   void connect();
@@ -37,5 +41,6 @@ class Mqtt {
   std::queue<std::tuple<std::string, std::vector<uint8_t>, int>> m_messages;
   std::set<std::string> m_topics;
   std::set<std::string> m_waitingTopics;
-  std::vector<std::pair<std::string, std::function<void(const std::string&)>>> m_callbacks;
+  std::vector<std::pair<std::string, RawCallback>> m_rawCallbacks;
+  std::vector<std::pair<std::string, JsonCallback>> m_jsonCallbacks;
 };

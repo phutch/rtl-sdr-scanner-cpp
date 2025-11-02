@@ -8,15 +8,14 @@
 
 class RemoteController {
  public:
-  RemoteController(const Config& config, Mqtt& mqtt, std::function<void(const nlohmann::json&)> configCallback);
+  RemoteController(const Config& config, Mqtt& mqtt);
+
+  void reloadConfigCallback(const Mqtt::JsonCallback& callback);
+  void reloadConfigStatus(const bool& success);
 
  private:
   void listCallback(const std::string& data);
-  void configCallback(const std::string& data);
-  void manualRecordingCallback(const std::string& data);
-  void restartCallback(const std::string& data);
 
   const Config& m_config;
   Mqtt& m_mqtt;
-  std::function<void(const nlohmann::json&)> m_configCallback;
 };

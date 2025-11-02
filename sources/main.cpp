@@ -51,9 +51,11 @@ int main(int argc, char** argv) {
       Logger::info(LABEL, "mqtt: {}", colored(GREEN, "{}", config.mqtt()));
 
       Mqtt mqtt(config);
-      RemoteController remoteController(config, mqtt, [&reload, &argConfig](const nlohmann::json& json) {
+      RemoteController remoteController(config, mqtt);
+      remoteController.reloadConfigCallback([&reload, &argConfig, &remoteController](const nlohmann::json& json) {
         Logger::info(LABEL, "reload config: {}", colored(GREEN, "{}", json.dump()));
         Config::saveToFile(argConfig.configFile, json);
+        remoteController.reloadConfigStatus(true);
         reload = true;
       });
       std::vector<std::unique_ptr<Scanner>> scanners;
