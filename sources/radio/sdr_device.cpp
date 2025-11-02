@@ -79,11 +79,11 @@ void SdrDevice::setFrequencyRange(FrequencyRange frequencyRange) {
   m_blocker->setBlocking(false);
 }
 
-void SdrDevice::updateRecordings(const std::vector<FrequencyFlush> sortedShifts) {
+void SdrDevice::updateRecordings(const std::vector<Recording> sortedShifts) {
   const auto isWaitingForRecording = [&sortedShifts](const Frequency shift) {
-    return std::find_if(sortedShifts.begin(), sortedShifts.end(), [shift](const FrequencyFlush shiftFlush) {
+    return std::find_if(sortedShifts.begin(), sortedShifts.end(), [shift](const Recording shiftFlush) {
              // improve auto formatter
-             return shift == shiftFlush.first;
+             return shift == shiftFlush.m_shift;
            }) != sortedShifts.end();
   };
   const auto getShiftRecorder = [this](const Frequency shift) {

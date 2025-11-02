@@ -34,7 +34,7 @@ class Transmission : virtual public gr::sync_block {
   void updateSignals(const float* avgPower, const float* rawPower, const std::chrono::milliseconds now);
   Index getBestIndex(Index index) const;
   bool isIndexIgnored(const Index& index) const;
-  std::vector<FrequencyFlush> getSortedTransmissions(const std::chrono::milliseconds now) const;
+  std::vector<Recording> getSortedTransmissions(const std::chrono::milliseconds now) const;
 
   const Config& m_config;
   const Device& m_device;

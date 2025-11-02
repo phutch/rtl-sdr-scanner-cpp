@@ -13,8 +13,15 @@
 
 using Frequency = int32_t;
 using FrequencyRange = std::pair<Frequency, Frequency>;
-using FrequencyFlush = std::pair<Frequency, bool>;
-using TransmissionNotification = Notification<std::vector<FrequencyFlush>>;
+
+struct Recording {
+  Recording(const Frequency& shift, const bool& flush);
+
+  Frequency m_shift;
+  bool m_flush;
+};
+
+using TransmissionNotification = Notification<std::vector<Recording>>;
 using SimpleComplex = std::complex<int8_t>;
 
 struct Satellite {

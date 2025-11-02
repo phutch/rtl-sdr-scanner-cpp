@@ -163,11 +163,11 @@ bool Transmission::isIndexIgnored(const Index& index) const {
   return false;
 }
 
-std::vector<FrequencyFlush> Transmission::getSortedTransmissions(const std::chrono::milliseconds now) const {
+std::vector<Recording> Transmission::getSortedTransmissions(const std::chrono::milliseconds now) const {
   std::vector<Index> indexes;
   std::transform(m_signals.begin(), m_signals.end(), std::back_inserter(indexes), [](auto& kv) { return kv.first; });
   std::sort(indexes.begin(), indexes.end(), [this](const Index& i1, const Index& i2) { return m_signals.at(i1).getPower() > m_signals.at(i2).getPower(); });
-  std::vector<FrequencyFlush> transmissions;
+  std::vector<Recording> transmissions;
   for (const auto& index : indexes) {
     const auto frequency = getTunedFrequency(m_indexToShift(index), m_config.recordingTuningStep());
     transmissions.emplace_back(frequency, m_signals.at(index).needFlush(now));

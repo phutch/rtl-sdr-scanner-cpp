@@ -24,7 +24,7 @@ class SdrDevice {
   ~SdrDevice();
 
   void setFrequencyRange(FrequencyRange frequencyRange);
-  void updateRecordings(const std::vector<FrequencyFlush> sortedShifts);
+  void updateRecordings(const std::vector<Recording> sortedShifts);
 
  private:
   Frequency getFrequency() const;
