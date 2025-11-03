@@ -13,63 +13,48 @@ constexpr auto YELLOW = "\033[0;93m";
 constexpr auto BLUE = "\033[0;94m";
 constexpr auto NC = "\033[0m";
 
+template <typename... Args>
+using format_string = fmt::format_string<Args...>;
+
 class Logger {
  public:
   static void configure(
       const spdlog::level::level_enum logLevelConsole, const spdlog::level::level_enum logLevelFile, const std::string& logFile, int fileSize, int filesCount, bool isColorLogEnabled);
 
   template <typename... Args>
-  static void trace(const char* label, const char* fmt, const Args&... args) {
-    char buf[LOGGER_BUFFER_SIZE];
-    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
-    strcat(buf, "[{:12}] ");
-    strcat(buf, fmt);
-    Logger::_logger->trace(buf, label, args...);
+  static void trace(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
+    auto msg = fmt::format(fmt, std::forward<Args>(args)...);
+    Logger::_logger->trace("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
-  static void debug(const char* label, const char* fmt, const Args&... args) {
-    char buf[LOGGER_BUFFER_SIZE];
-    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
-    strcat(buf, "[{:12}] ");
-    strcat(buf, fmt);
-    Logger::_logger->debug(buf, label, args...);
+  static void debug(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
+    auto msg = fmt::format(fmt, std::forward<Args>(args)...);
+    Logger::_logger->debug("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
-  static void info(const char* label, const char* fmt, const Args&... args) {
-    char buf[LOGGER_BUFFER_SIZE];
-    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
-    strcat(buf, "[{:12}] ");
-    strcat(buf, fmt);
-    Logger::_logger->info(buf, label, args...);
+  static void info(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
+    auto msg = fmt::format(fmt, std::forward<Args>(args)...);
+    Logger::_logger->info("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
-  static void warn(const char* label, const char* fmt, const Args&... args) {
-    char buf[LOGGER_BUFFER_SIZE];
-    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
-    strcat(buf, "[{:12}] ");
-    strcat(buf, fmt);
-    Logger::_logger->warn(buf, label, args...);
+  static void warn(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
+    auto msg = fmt::format(fmt, std::forward<Args>(args)...);
+    Logger::_logger->warn("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
-  static void error(const char* label, const char* fmt, const Args&... args) {
-    char buf[LOGGER_BUFFER_SIZE];
-    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
-    strcat(buf, "[{:12}] ");
-    strcat(buf, fmt);
-    Logger::_logger->error(buf, label, args...);
+  static void error(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
+    auto msg = fmt::format(fmt, std::forward<Args>(args)...);
+    Logger::_logger->error("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
-  static void critical(const char* label, const char* fmt, const Args&... args) {
-    char buf[LOGGER_BUFFER_SIZE];
-    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
-    strcat(buf, "[{:12}] ");
-    strcat(buf, fmt);
-    Logger::_logger->critical(buf, label, args...);
+  static void critical(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
+    auto msg = fmt::format(fmt, std::forward<Args>(args)...);
+    Logger::_logger->critical("[{:12}] {}", label, msg);
   }
 
   static void flush() { Logger::_logger->flush(); }
@@ -84,15 +69,11 @@ class Logger {
 };
 
 template <typename... Args>
-std::string colored(const char* color, const char* fmt, const Args&... args) {
+std::string colored(const char* color, fmt::format_string<Args...> fmt, Args&&... args) {
   if (Logger::isColorLogEnabled()) {
-    char buf[20];
-    std::memset(buf, 0, 20);
-    strcat(buf, "{}");
-    strcat(buf, fmt);
-    strcat(buf, "{}");
-    return fmt::format(buf, color, args..., NC);
+    auto msg = fmt::format(fmt, std::forward<Args>(args)...);
+    return fmt::format("{}{}{}", color, msg, NC);
   } else {
-    return fmt::format(fmt, args...);
+    return fmt::format(fmt, std::forward<Args>(args)...);
   }
 }
