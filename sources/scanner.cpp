@@ -38,9 +38,17 @@ Scanner::~Scanner() {
 void Scanner::runScheduler(const std::optional<FrequencyRange>& activeRange) {
   auto recordings = m_scheduler.getRecordings(getTime());
   if (recordings) {
-    m_device.updateRecordings({});
-    m_device.setFrequencyRange(recordings->first);
+    Logger::info(LABEL, "start scheduled recording");
+    m_scheduler.setRefreshEnabled(false);
+    auto lastRange = FrequencyRange(0, 0);
     while (m_isRunning && recordings) {
+      const auto range = recordings->first;
+      if (range != lastRange) {
+        const auto center = (range.first + range.second) / 2;
+        Logger::info(LABEL, "update scheduled frequency, center: {}", formatFrequency(center));
+        m_device.setFrequencyRange(range);
+        lastRange = range;
+      }
       m_device.updateRecordings(recordings->second);
       recordings = m_scheduler.getRecordings(getTime());
       std::this_thread::sleep_for(LOOP_TIMEOUT);
@@ -49,6 +57,8 @@ void Scanner::runScheduler(const std::optional<FrequencyRange>& activeRange) {
     if (activeRange) {
       m_device.setFrequencyRange(*activeRange);
     }
+    m_scheduler.setRefreshEnabled(true);
+    Logger::info(LABEL, "stop scheduled recording");
   }
 }
 

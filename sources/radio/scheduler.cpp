@@ -17,7 +17,7 @@ ScheduledTransmission::ScheduledTransmission(
     : m_name(name), m_begin(begin), m_end(end), m_frequency(frequency), m_bandwidth(bandwidth), m_modulation(modulation) {}
 
 Scheduler::Scheduler(const Config& config, const Device& device, RemoteController& remoteController)
-    : m_config(config), m_device(device), m_remoteController(remoteController), m_lastUpdateTime(0), m_isRunning(true), m_thread([this]() { worker(); }) {}
+    : m_config(config), m_device(device), m_remoteController(remoteController), m_lastUpdateTime(0), m_isRefreshEnabled(true), m_isRunning(true), m_thread([this]() { worker(); }) {}
 
 Scheduler::~Scheduler() {
   m_isRunning = false;
@@ -65,7 +65,7 @@ void Scheduler::worker() {
   m_remoteController.satellitesCallback(m_device.getName(), std::bind(&Scheduler::satellitesCallback, this, _1));
   while (m_isRunning) {
     const auto now = getTime();
-    if (m_lastUpdateTime + UPDATE_INTERVAL <= now) {
+    if (m_isRefreshEnabled && m_lastUpdateTime + UPDATE_INTERVAL <= now) {
       satellitesQuery();
       m_lastUpdateTime = now;
     }
@@ -106,3 +106,5 @@ void Scheduler::satellitesCallback(const nlohmann::json& json) {
   std::unique_lock lock(m_mutex);
   m_scheduledTransmissions = scheduledTransmissions;
 }
+
+void Scheduler::setRefreshEnabled(const bool& enabled) { m_isRefreshEnabled = enabled; }

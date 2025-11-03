@@ -33,12 +33,14 @@ class Scheduler {
   void worker();
   void satellitesQuery();
   void satellitesCallback(const nlohmann::json& json);
+  void setRefreshEnabled(const bool& enabled);
 
   const Config& m_config;
   const Device m_device;
   RemoteController& m_remoteController;
   std::list<ScheduledTransmission> m_scheduledTransmissions;
   std::chrono::milliseconds m_lastUpdateTime;
+  std::atomic<bool> m_isRefreshEnabled;
   std::atomic<bool> m_isRunning;
   std::thread m_thread;
   std::mutex m_mutex;
