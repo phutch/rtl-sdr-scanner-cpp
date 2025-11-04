@@ -28,7 +28,7 @@ std::vector<Gain> getGains(SoapySDR::Device* sdr) {
         colored(GREEN, "{}", gainRange.minimum()),
         colored(GREEN, "{}", gainRange.maximum()),
         colored(GREEN, "{}", gainRange.step()));
-    gains.emplace_back(gain, gainRange.maximum());
+    gains.emplace_back(gain, gainRange.maximum(), gainRange.minimum(), gainRange.maximum(), gainRange.step());
   }
   return gains;
 }
@@ -45,6 +45,7 @@ void SdrDeviceReader::updateDevice(Device& device, const SoapySDR::Kwargs args) 
 
   device.driver = driver;
   device.sample_rates = getSampleRates(sdr);
+  device.gains = getGains(sdr);
 
   SoapySDR::Device::unmake(sdr);
 }
@@ -113,5 +114,11 @@ void SdrDeviceReader::clearDevices(nlohmann::json& json) {
   for (auto& device : json.at("devices")) {
     device.erase("driver");
     device.erase("sample_rates");
+
+    for (auto& gain : device.at("gains")) {
+      gain.erase("min");
+      gain.erase("max");
+      gain.erase("step");
+    }
   }
 }

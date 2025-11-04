@@ -45,8 +45,11 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Satellite, id, name, frequency, bandwidth, mo
 struct Gain {
   std::string name;
   double value;
+  double min;
+  double max;
+  double step;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Gain, name, value)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Gain, name, value, min, max, step)
 
 struct Device {
   bool enabled{};
