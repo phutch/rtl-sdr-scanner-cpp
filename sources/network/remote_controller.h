@@ -13,8 +13,8 @@ class RemoteController {
   void reloadConfigCallback(const Mqtt::JsonCallback& callback);
   void reloadConfigStatus(const bool& success);
 
-  void satellitesQuery(const std::string& device, const std::string& query);
-  void satellitesCallback(const std::string& device, const Mqtt::JsonCallback& callback);
+  void schedulerQuery(const std::string& device, const std::string& query);
+  void schedulerCallback(const std::string& device, const Mqtt::JsonCallback& callback);
 
  private:
   void listCallback(const std::string& data);

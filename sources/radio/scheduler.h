@@ -19,10 +19,14 @@ class Scheduler {
       const std::chrono::milliseconds& now, std::list<ScheduledTransmission>& scheduledTransmissions, Frequency sampleRate, Frequency shift);
   std::optional<std::pair<FrequencyRange, std::vector<Recording>>> getRecordings(const std::chrono::milliseconds& now);
 
-  void worker();
-  void satellitesQuery();
-  void satellitesCallback(const nlohmann::json& json);
   void setRefreshEnabled(const bool& enabled);
+
+ private:
+  void worker();
+  void mergeScheduledTransmissions();
+
+  void query();
+  void callback(const nlohmann::json& json);
 
   const Config& m_config;
   const Device m_device;

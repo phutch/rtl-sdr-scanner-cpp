@@ -3,14 +3,15 @@
 #include <radio/help_structures.h>
 #include <utils/serializers.h>
 
-struct SatellitesQuery {
+struct SchedulerQuery {
   std::string latitude;
   std::string longitude;
   int altitude;
   std::string api_key;
   std::vector<Satellite> satellites;
+  std::vector<Crontab> crontabs;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SatellitesQuery, latitude, longitude, altitude, api_key, satellites)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SchedulerQuery, latitude, longitude, altitude, api_key, satellites, crontabs)
 
 struct ScheduledTransmission {
   std::string name;

@@ -58,25 +58,25 @@ std::optional<std::pair<FrequencyRange, std::vector<Recording>>> Scheduler::getR
 }
 
 void Scheduler::worker() {
-  m_remoteController.satellitesCallback(m_device.getName(), std::bind(&Scheduler::satellitesCallback, this, _1));
+  m_remoteController.schedulerCallback(m_device.getName(), std::bind(&Scheduler::callback, this, _1));
   while (m_isRunning) {
     const auto now = getTime();
     if (m_isRefreshEnabled && m_lastUpdateTime + UPDATE_INTERVAL <= now) {
-      satellitesQuery();
+      query();
       m_lastUpdateTime = now;
     }
     std::this_thread::sleep_for(LOOP_TIMEOUT);
   }
 }
 
-void Scheduler::satellitesQuery() {
-  Logger::info(LABEL, "send satellites query");
-  const SatellitesQuery query(m_config.latitude(), m_config.longitude(), m_config.altitude(), m_config.apiKey(), m_device.satellites);
-  m_remoteController.satellitesQuery(m_device.getName(), static_cast<nlohmann::json>(query).dump());
+void Scheduler::query() {
+  Logger::info(LABEL, "send query");
+  const SchedulerQuery query(m_config.latitude(), m_config.longitude(), m_config.altitude(), m_config.apiKey(), m_device.satellites, m_device.crontabs);
+  m_remoteController.schedulerQuery(m_device.getName(), static_cast<nlohmann::json>(query).dump());
 }
 
-void Scheduler::satellitesCallback(const nlohmann::json& json) {
-  Logger::info(LABEL, "received satellites: {}", colored(GREEN, "{}", json.dump()));
+void Scheduler::callback(const nlohmann::json& json) {
+  Logger::info(LABEL, "received response, size: {}", colored(GREEN, "{}", json.size()));
   std::unique_lock lock(m_mutex);
   m_scheduledTransmissions = json;
 }

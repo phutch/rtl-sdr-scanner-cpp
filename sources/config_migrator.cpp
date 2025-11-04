@@ -28,6 +28,12 @@ void ConfigMigrator::sort(nlohmann::json& json) {
   for (auto& device : devices) {
     auto& ranges = device.at("ranges");
     std::sort(ranges.begin(), ranges.end(), [](const nlohmann::json& r1, const nlohmann::json& r2) { return r1.at("start").get<Frequency>() < r2.at("start").get<Frequency>(); });
+
+    auto& satellites = device.at("satellites");
+    std::sort(satellites.begin(), satellites.end(), [](const nlohmann::json& r1, const nlohmann::json& r2) { return r1.at("name").get<std::string>() < r2.at("name").get<std::string>(); });
+
+    auto& crontabs = device.at("crontabs");
+    std::sort(crontabs.begin(), crontabs.end(), [](const nlohmann::json& r1, const nlohmann::json& r2) { return r1.at("name").get<std::string>() < r2.at("name").get<std::string>(); });
   }
 }
 

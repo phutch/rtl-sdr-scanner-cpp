@@ -51,6 +51,16 @@ struct Gain {
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Gain, name, value, min, max, step)
 
+struct Crontab {
+  std::string name;
+  std::string expression;
+  std::chrono::seconds duration;
+  Frequency frequency;
+  Frequency bandwidth;
+  std::string modulation;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Crontab, name, expression, duration, frequency, bandwidth, modulation)
+
 struct Device {
   bool connected = false;
   bool enabled{};
@@ -63,7 +73,8 @@ struct Device {
   float stop_recording_level{};
   std::vector<Satellite> satellites{};
   std::vector<Frequency> sample_rates{};
+  std::vector<Crontab> crontabs;
 
   std::string getName() const { return driver + "_" + serial; }
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Device, connected, enabled, gains, serial, driver, sample_rate, ranges, start_recording_level, stop_recording_level, satellites, sample_rates)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Device, connected, enabled, gains, serial, driver, sample_rate, ranges, start_recording_level, stop_recording_level, satellites, sample_rates, crontabs)

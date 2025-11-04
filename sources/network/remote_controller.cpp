@@ -7,7 +7,7 @@
 constexpr auto LIST = "list";
 constexpr auto STATUS = "status";
 constexpr auto CONFIG = "config";
-constexpr auto SATELLITES = "satellites";
+constexpr auto SCHEDULER = "scheduler";
 constexpr auto SUCCESS = "success";
 constexpr auto FAILED = "failed";
 constexpr auto LABEL = "remote";
@@ -23,10 +23,10 @@ void RemoteController::reloadConfigCallback(const Mqtt::JsonCallback& callback) 
 
 void RemoteController::reloadConfigStatus(const bool& success) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", CONFIG, m_config.getId(), success ? SUCCESS : FAILED), "", 2); }
 
-void RemoteController::satellitesQuery(const std::string& device, const std::string& query) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}/get", SATELLITES, m_config.getId(), device), query, 2); }
+void RemoteController::schedulerQuery(const std::string& device, const std::string& query) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}/get", SCHEDULER, m_config.getId(), device), query, 2); }
 
-void RemoteController::satellitesCallback(const std::string& device, const Mqtt::JsonCallback& callback) {
-  m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}/{}/set", SATELLITES, m_config.getId(), device), callback);
+void RemoteController::schedulerCallback(const std::string& device, const Mqtt::JsonCallback& callback) {
+  m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}/{}/set", SCHEDULER, m_config.getId(), device), callback);
 }
 
 void RemoteController::listCallback(const std::string&) {
