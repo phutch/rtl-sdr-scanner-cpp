@@ -30,6 +30,7 @@ std::vector<Gain> getGains(SoapySDR::Device* sdr) {
         colored(GREEN, "{}", gainRange.step()));
     gains.emplace_back(gain, gainRange.maximum(), gainRange.minimum(), gainRange.maximum(), gainRange.step());
   }
+  std::sort(gains.begin(), gains.end(), [](const Gain& g1, Gain& g2) { return g1.name < g2.name; });
   return gains;
 }
 
@@ -46,7 +47,15 @@ void SdrDeviceReader::updateDevice(Device& device, const SoapySDR::Kwargs args) 
   device.connected = true;
   device.driver = driver;
   device.sample_rates = getSampleRates(sdr);
+  const auto backupGains = device.gains;
   device.gains = getGains(sdr);
+  for (auto& gain : device.gains) {
+    for (auto& backupGain : backupGains) {
+      if (gain.name == backupGain.name) {
+        gain.value = backupGain.value;
+      }
+    }
+  }
 
   SoapySDR::Device::unmake(sdr);
 }
