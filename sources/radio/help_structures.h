@@ -1,6 +1,7 @@
 #pragma once
 
 #include <notification.h>
+#include <utils/serializers.h>
 
 #include <complex>
 #include <nlohmann/json.hpp>
