@@ -68,6 +68,7 @@ struct Device {
   std::vector<Gain> gains{};
   std::string serial{};
   std::string driver{};
+  std::string alias{};
   Frequency sample_rate{};
   std::vector<FrequencyRange> ranges{};
   float start_recording_level{};
@@ -78,4 +79,5 @@ struct Device {
 
   std::string getName() const { return driver + "_" + serial; }
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Device, connected, enabled, gains, serial, driver, sample_rate, ranges, start_recording_level, stop_recording_level, satellites, sample_rates, crontabs)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(
+    Device, connected, enabled, gains, serial, driver, alias, sample_rate, ranges, start_recording_level, stop_recording_level, satellites, sample_rates, crontabs)

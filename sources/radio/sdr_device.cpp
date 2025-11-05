@@ -18,7 +18,7 @@ SdrDevice::SdrDevice(const Config& config, const Device& device, Mqtt& mqtt, Tra
     : m_sampleRate(device.sample_rate),
       m_isInitialized(false),
       m_frequencyRange({0, 0}),
-      m_dataController(mqtt, device.getName()),
+      m_dataController(mqtt, device.alias.empty() ? device.getName() : device.alias),
       m_tb(gr::make_top_block("sdr")),
       m_powerFileSink(nullptr),
       m_rawIqFileSink(nullptr),
