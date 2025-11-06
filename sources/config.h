@@ -38,10 +38,7 @@ constexpr auto SPECTROGRAM_SEND_INTERVAL = std::chrono::milliseconds(1000);  // 
 
 class Config {
  public:
-  static Config loadFromFile(const std::string& path, const ArgConfig& argConfig);
-  static void saveToFile(const std::string& path, const nlohmann::json& json);
-  static nlohmann::json hideSensitiveData(const nlohmann::json& json);
-  nlohmann::json json() const;
+  Config(const ArgConfig& argConfig, const FileConfig& fileConfig);
   std::string mqtt() const;
 
   std::string getId() const;
@@ -68,9 +65,7 @@ class Config {
   int altitude() const;
 
  private:
-  Config(const ArgConfig& argConfig, const FileConfig& fileConfig);
-
   const std::string m_id;
   const ArgConfig& m_argConfig;
-  const FileConfig m_fileConfig;
+  const FileConfig& m_fileConfig;
 };

@@ -7,6 +7,8 @@
 constexpr auto LIST = "list";
 constexpr auto STATUS = "status";
 constexpr auto CONFIG = "config";
+constexpr auto TMP_CONFIG = "tmp_config";
+constexpr auto RESET_TMP_CONFIG = "reset_tmp_config";
 constexpr auto SCHEDULER = "scheduler";
 constexpr auto SUCCESS = "success";
 constexpr auto FAILED = "failed";
@@ -14,22 +16,21 @@ constexpr auto LABEL = "remote";
 
 using namespace std::placeholders;
 
-RemoteController::RemoteController(const Config& config, Mqtt& mqtt) : m_config(config), m_mqtt(mqtt) {
-  mqtt.setRawMessageCallback(fmt::format("sdr/{}", LIST), std::bind(&RemoteController::listCallback, this, _1));
-  Logger::info(LABEL, "started, id: {}", colored(GREEN, "{}", m_config.getId()));
-}
+RemoteController::RemoteController(const Config& config, Mqtt& mqtt) : m_config(config), m_mqtt(mqtt) { Logger::info(LABEL, "started, id: {}", colored(GREEN, "{}", m_config.getId())); }
 
-void RemoteController::reloadConfigCallback(const Mqtt::JsonCallback& callback) { m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}", CONFIG, m_config.getId()), callback); }
+void RemoteController::getConfigQuery(const Mqtt::RawCallback& callback) { m_mqtt.setRawMessageCallback(fmt::format("sdr/{}", LIST), callback); }
+void RemoteController::getConfigResponse(const std::string& data) { m_mqtt.publish(fmt::format("sdr/{}/{}", STATUS, m_config.getId()), data, 2); }
 
-void RemoteController::reloadConfigStatus(const bool& success) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", CONFIG, m_config.getId(), success ? SUCCESS : FAILED), "", 2); }
+void RemoteController::setConfigQuery(const Mqtt::JsonCallback& callback) { m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}", CONFIG, m_config.getId()), callback); }
+void RemoteController::setConfigResponse(const bool& success) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", CONFIG, m_config.getId(), success ? SUCCESS : FAILED), "", 2); }
+
+void RemoteController::resetTmpConfigQuery(const Mqtt::RawCallback& callback) { m_mqtt.setRawMessageCallback(fmt::format("sdr/{}/{}", RESET_TMP_CONFIG, m_config.getId()), callback); }
+void RemoteController::resetTmpConfigResponse(const bool& success) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", RESET_TMP_CONFIG, m_config.getId(), success ? SUCCESS : FAILED), "", 2); }
+
+void RemoteController::setTmpConfigQuery(const Mqtt::JsonCallback& callback) { m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}", TMP_CONFIG, m_config.getId()), callback); }
+void RemoteController::setTmpConfigResponse(const bool& success) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", TMP_CONFIG, m_config.getId(), success ? SUCCESS : FAILED), "", 2); }
 
 void RemoteController::schedulerQuery(const std::string& device, const std::string& query) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}/get", SCHEDULER, m_config.getId(), device), query, 2); }
-
 void RemoteController::schedulerCallback(const std::string& device, const Mqtt::JsonCallback& callback) {
   m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}/{}/set", SCHEDULER, m_config.getId(), device), callback);
-}
-
-void RemoteController::listCallback(const std::string&) {
-  Logger::info(LABEL, "received list");
-  m_mqtt.publish(fmt::format("sdr/{}/{}", STATUS, m_config.getId()), m_config.json().dump(), 2);
 }

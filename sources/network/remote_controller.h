@@ -10,8 +10,17 @@ class RemoteController {
  public:
   RemoteController(const Config& config, Mqtt& mqtt);
 
-  void reloadConfigCallback(const Mqtt::JsonCallback& callback);
-  void reloadConfigStatus(const bool& success);
+  void getConfigQuery(const Mqtt::RawCallback& callback);
+  void getConfigResponse(const std::string& data);
+
+  void setConfigQuery(const Mqtt::JsonCallback& callback);
+  void setConfigResponse(const bool& success);
+
+  void resetTmpConfigQuery(const Mqtt::RawCallback& callback);
+  void resetTmpConfigResponse(const bool& success);
+
+  void setTmpConfigQuery(const Mqtt::JsonCallback& callback);
+  void setTmpConfigResponse(const bool& success);
 
   void schedulerQuery(const std::string& device, const std::string& query);
   void schedulerCallback(const std::string& device, const Mqtt::JsonCallback& callback);

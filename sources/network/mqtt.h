@@ -14,7 +14,7 @@
 
 class Mqtt {
  public:
-  using RawCallback = std::function<void(const nlohmann::json&)>;
+  using RawCallback = std::function<void(const std::string&)>;
   using JsonCallback = std::function<void(const nlohmann::json&)>;
 
   Mqtt(const Config& config);

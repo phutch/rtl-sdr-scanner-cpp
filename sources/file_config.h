@@ -43,5 +43,9 @@ struct FileConfig {
   RecordingConfig recording;
   int version = 1;
   int workers = 0;
+
+  static FileConfig fromJson(nlohmann::json json);
+  static nlohmann::json toSave(nlohmann::json json);
+  static nlohmann::json toPrint(nlohmann::json json);
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(FileConfig, api_key, devices, ignored_frequencies, output, position, recording, version, workers)

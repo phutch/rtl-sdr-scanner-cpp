@@ -27,60 +27,6 @@ spdlog::level::level_enum parseLogLevel(const std::string& level) {
 }
 
 Config::Config(const ArgConfig& argConfig, const FileConfig& fileConfig) : m_id(!argConfig.id.empty() ? argConfig.id : randomHex(8)), m_argConfig(argConfig), m_fileConfig(fileConfig) {}
-
-Config Config::loadFromFile(const std::string& path, const ArgConfig& argConfig) {
-  std::ifstream stream(path);
-  if (stream) {
-    try {
-      auto json = nlohmann::json::parse(stream);
-      ConfigMigrator::update(json);
-      FileConfig fileConfig(json);
-      SdrDeviceReader::updateDevices(fileConfig.devices);
-      return Config(argConfig, fileConfig);
-    } catch (const nlohmann::json::parse_error& exception) {
-      Logger::info(LABEL, "config parse error, creating default");
-      FileConfig fileConfig;
-      SdrDeviceReader::updateDevices(fileConfig.devices);
-      Config::saveToFile(path, static_cast<nlohmann::json>(fileConfig));
-      return Config(argConfig, fileConfig);
-    }
-  } else {
-    Logger::info(LABEL, "config not found, creating default");
-    FileConfig fileConfig;
-    SdrDeviceReader::updateDevices(fileConfig.devices);
-    Config::saveToFile(path, static_cast<nlohmann::json>(fileConfig));
-    return Config(argConfig, fileConfig);
-  }
-}
-
-void Config::saveToFile(const std::string& path, const nlohmann::json& json) {
-  std::ofstream stream(path);
-  if (stream) {
-    auto tmp = json;
-    SdrDeviceReader::clearDevices(tmp);
-    ConfigMigrator::sort(tmp);
-    stream << std::setw(4) << tmp << std::endl;
-  } else {
-    Logger::warn(LABEL, "save new config failed");
-  }
-}
-
-nlohmann::json Config::hideSensitiveData(const nlohmann::json& json) {
-  nlohmann::json config(json);
-  try {
-    if (!config["api_key"].empty()) {
-      config["api_key"] = "******";
-    }
-    std::regex regex(R"(^(\d+)\.\d+)");
-    config["position"]["latitude"] = std::regex_replace(config["position"]["latitude"].get<std::string>(), regex, "$1.********");
-    config["position"]["longitude"] = std::regex_replace(config["position"]["longitude"].get<std::string>(), regex, "$1.********");
-  } catch (const std::exception& exception) {
-    Logger::warn(LABEL, "hide sensitive data exception: {}", colored(RED, "{}", exception.what()));
-  }
-  return config;
-}
-
-nlohmann::json Config::json() const { return static_cast<nlohmann::json>(m_fileConfig); }
 std::string Config::mqtt() const { return fmt::format("{}@{}", m_argConfig.mqttUser, m_argConfig.mqttUrl); };
 
 std::string Config::getId() const { return m_id; }
