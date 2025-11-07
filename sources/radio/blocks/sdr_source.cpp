@@ -36,7 +36,6 @@ int SdrSource::work(int noutput_items, gr_vector_const_void_star&, gr_vector_voi
     return result;
   } else {
     Logger::error(LABEL, "soapy error: {}", SoapySDR::errToStr(result));
-    Logger::flush();
     exit(1);
     return 0;
   }

@@ -24,47 +24,45 @@ class Logger {
   template <typename... Args>
   static void trace(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
     auto msg = fmt::format(fmt, std::forward<Args>(args)...);
-    Logger::_logger->trace("[{:12}] {}", label, msg);
+    spdlog::trace("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
   static void debug(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
     auto msg = fmt::format(fmt, std::forward<Args>(args)...);
-    Logger::_logger->debug("[{:12}] {}", label, msg);
+    spdlog::debug("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
   static void info(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
     auto msg = fmt::format(fmt, std::forward<Args>(args)...);
-    Logger::_logger->info("[{:12}] {}", label, msg);
+    spdlog::info("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
   static void warn(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
     auto msg = fmt::format(fmt, std::forward<Args>(args)...);
-    Logger::_logger->warn("[{:12}] {}", label, msg);
+    spdlog::warn("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
   static void error(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
     auto msg = fmt::format(fmt, std::forward<Args>(args)...);
-    Logger::_logger->error("[{:12}] {}", label, msg);
+    spdlog::error("[{:12}] {}", label, msg);
   }
 
   template <typename... Args>
   static void critical(const char* label, fmt::format_string<Args...> fmt, Args&&... args) {
     auto msg = fmt::format(fmt, std::forward<Args>(args)...);
-    Logger::_logger->critical("[{:12}] {}", label, msg);
+    spdlog::critical("[{:12}] {}", label, msg);
   }
 
-  static void flush() { Logger::_logger->flush(); }
   static bool isColorLogEnabled() { return _isColorLogEnabled; }
 
  private:
   Logger() = delete;
   ~Logger() = delete;
 
-  inline static std::shared_ptr<spdlog::logger> _logger = nullptr;
   inline static bool _isColorLogEnabled = true;
 };
 

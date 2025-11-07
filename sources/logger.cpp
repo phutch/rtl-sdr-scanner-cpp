@@ -7,26 +7,24 @@
 
 void Logger::Logger::configure(
     const spdlog::level::level_enum logLevelConsole, const spdlog::level::level_enum logLevelFile, const std::string& logFile, int fileSize, int filesCount, bool isColorLogEnabled) {
-  spdlog::drop_all();
-  _logger.reset();
+  std::shared_ptr<spdlog::logger> logger = std::make_shared<spdlog::logger>("auto_sdr");
 
-  auto consoleLogger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-  consoleLogger->set_level(logLevelConsole);
-
-  if (logLevelFile == spdlog::level::off || logFile.empty()) {
-    std::initializer_list<spdlog::sink_ptr> loggers{consoleLogger};
-    Logger::_logger = std::make_shared<spdlog::logger>("auto_sdr", loggers);
-  } else {
-    auto fileLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFile, fileSize, filesCount);
-    fileLogger->set_level(logLevelFile);
-
-    std::initializer_list<spdlog::sink_ptr> loggers{consoleLogger, fileLogger};
-    Logger::_logger = std::make_shared<spdlog::logger>("auto_sdr", loggers);
+  if (logLevelConsole != spdlog::level::off) {
+    auto consoleLogger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    consoleLogger->set_level(logLevelConsole);
+    logger->sinks().push_back(consoleLogger);
   }
 
-  _logger->set_level(std::min(logLevelConsole, logLevelFile));
-  _logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%-7l] %v");
-  spdlog::register_logger(_logger);
-  spdlog::flush_every(std::chrono::seconds(10));
-  _isColorLogEnabled = isColorLogEnabled;
+  if (logLevelFile != spdlog::level::off && !logFile.empty() && 0 < fileSize && 0 < filesCount) {
+    auto fileLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFile, fileSize, filesCount);
+    fileLogger->set_level(logLevelFile);
+    logger->sinks().push_back(fileLogger);
+  }
+
+  isColorLogEnabled = isColorLogEnabled;
+  logger->set_level(std::min(logLevelConsole, logLevelFile));
+  logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%-7l] %v");
+  spdlog::flush_every(std::chrono::seconds(30));
+  spdlog::flush_on(spdlog::level::warn);
+  spdlog::set_default_logger(logger);
 }
