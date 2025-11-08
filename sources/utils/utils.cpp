@@ -12,14 +12,6 @@
 
 std::chrono::milliseconds getTime() { return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()); }
 
-std::string removeZerosFromBegging(const std::string& string) {
-  uint32_t i = 0;
-  while (i < string.length() && string[i] == '0') {
-    i++;
-  }
-  return string.substr(i, string.length() - i);
-}
-
 std::string randomHex(std::size_t hex_count) {
   std::random_device rd;
   std::uniform_int_distribution<int> dist(0, 15);
