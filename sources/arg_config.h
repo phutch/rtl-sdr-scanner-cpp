@@ -11,4 +11,5 @@ struct ArgConfig {
   std::string mqttUrl;
   std::string mqttUser;
   std::string mqttPassword;
+  std::string workDir = ".";
 };

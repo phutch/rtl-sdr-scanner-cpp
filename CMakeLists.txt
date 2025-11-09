@@ -21,6 +21,7 @@ find_package(Gnuradio COMPONENTS
     video-sdl
     network
     soapy
+    zeromq
 )
 find_package(nlohmann_json REQUIRED)
 find_package(PahoMqttCpp REQUIRED)
@@ -48,6 +49,7 @@ target_link_libraries(auto_sdr
     gnuradio::gnuradio-fft
     gnuradio::gnuradio-filter
     gnuradio::gnuradio-soapy
+    gnuradio::gnuradio-zeromq
     nlohmann_json::nlohmann_json
     spdlog::spdlog
     PahoMqttCpp::paho-mqttpp3
@@ -62,6 +64,7 @@ target_link_libraries(auto_sdr_test
     gnuradio::gnuradio-fft
     gnuradio::gnuradio-filter
     gnuradio::gnuradio-soapy
+    gnuradio::gnuradio-zeromq
     nlohmann_json::nlohmann_json
     spdlog::spdlog
     PahoMqttCpp::paho-mqttpp3

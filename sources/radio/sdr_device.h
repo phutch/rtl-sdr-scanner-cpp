@@ -19,7 +19,7 @@
 
 class SdrDevice {
  public:
-  SdrDevice(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification, const int recordersCount);
+  SdrDevice(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification);
   ~SdrDevice();
 
   void setFrequencyRange(FrequencyRange frequencyRange);
@@ -29,6 +29,10 @@ class SdrDevice {
   Frequency getFrequency() const;
   void setupChains(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification);
 
+  const Config& m_config;
+  const Device m_device;
+  const std::string m_zeromq;
+  RemoteController& m_remoteController;
   const Frequency m_sampleRate;
   bool m_isInitialized;
   FrequencyRange m_frequencyRange;

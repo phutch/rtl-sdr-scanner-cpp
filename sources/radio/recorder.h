@@ -20,23 +20,20 @@ class Recorder {
   Recorder(const Recorder&) = delete;
   Recorder& operator=(const Recorder&) = delete;
 
-  Recorder(const Config& config, std::shared_ptr<gr::top_block> tb, std::shared_ptr<gr::block> source, Frequency sampleRate, std::function<void(const nlohmann::json&)> send);
+  Recorder(const Config& config, const std::string& zeromq, Frequency sampleRate, const Recording& recording, std::function<void(const nlohmann::json&)> send);
   ~Recorder();
 
   Recording getRecording() const;
-  bool isRecording();
-  void startRecording(const Recording& recording);
-  void stopRecording();
   void flush();
   std::chrono::milliseconds getDuration() const;
 
  private:
   const Config& m_config;
   const Frequency m_sampleRate;
-  Recording m_recording;
+  const Recording m_recording;
   const std::function<void(const nlohmann::json&)> m_send;
 
-  std::shared_ptr<Blocker> m_blocker;
+  std::shared_ptr<gr::top_block> m_tb;
   std::shared_ptr<gr::blocks::rotator_cc> m_shiftBlock;
   std::shared_ptr<FileSink<gr_complex>> m_rawFileSinkBlock;
   std::shared_ptr<Buffer<SimpleComplex>> m_buffer;

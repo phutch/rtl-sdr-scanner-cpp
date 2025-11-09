@@ -63,6 +63,8 @@ class Config {
   std::string longitude() const;
   int altitude() const;
 
+  std::string workDir() const;
+
  private:
   const std::string m_id;
   const ArgConfig& m_argConfig;

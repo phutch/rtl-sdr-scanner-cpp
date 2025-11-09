@@ -24,7 +24,7 @@ Application::Application(nlohmann::json& tmpJson, const ArgConfig& argConfig)
       if (!device.enabled) {
         Logger::info(LABEL, "device disabled, skipping: {}", colored(GREEN, "{}", device.getName()));
       } else {
-        m_scanners.push_back(std::make_unique<Scanner>(m_config, device, m_remoteController, m_config.recordersCount()));
+        m_scanners.push_back(std::make_unique<Scanner>(m_config, device, m_remoteController));
       }
     } catch (const std::exception& exception) {
       Logger::exception(LABEL, exception, SPDLOG_LOC, "open device failed: {}", device.getName());

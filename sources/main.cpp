@@ -29,6 +29,7 @@ int main(int argc, char** argv) {
   app.add_option("--mqtt-url", argConfig.mqttUrl, "mqtt url")->required();
   app.add_option("--mqtt-user", argConfig.mqttUser, "mqtt username")->required();
   app.add_option("--mqtt-password", argConfig.mqttPassword, "mqtt password")->required();
+  app.add_option("--work-dir", argConfig.workDir, "work directory");
   CLI11_PARSE(app, argc, argv);
 
   dup2(fileno(fopen("/dev/null", "w")), fileno(stderr));
