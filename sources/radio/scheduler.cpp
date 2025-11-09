@@ -53,7 +53,7 @@ std::optional<std::pair<FrequencyRange, std::vector<Recording>>> Scheduler::getR
     const auto transmissionLeft = transmission.frequency - transmission.bandwidth / 2;
     const auto transmissionRight = transmission.frequency + transmission.bandwidth / 2;
     if (left <= transmissionLeft && transmissionRight <= right) {
-      recordings.emplace_back(transmission.frequency - center, true);
+      recordings.emplace_back(transmission.source, transmission.name, center, transmission.frequency, transmission.bandwidth, transmission.modulation, true);
     }
   }
   return std::pair<FrequencyRange, std::vector<Recording>>(range, recordings);

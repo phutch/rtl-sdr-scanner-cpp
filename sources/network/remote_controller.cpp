@@ -13,6 +13,8 @@ constexpr auto SCHEDULER = "scheduler";
 constexpr auto SUCCESS = "success";
 constexpr auto FAILED = "failed";
 constexpr auto LABEL = "remote";
+constexpr auto SPECTROGRAM = "spectrogram";
+constexpr auto TRANSMISSION = "transmission";
 
 using namespace std::placeholders;
 
@@ -34,3 +36,6 @@ void RemoteController::schedulerQuery(const std::string& device, const std::stri
 void RemoteController::schedulerCallback(const std::string& device, const Mqtt::JsonCallback& callback) {
   m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}/{}/set", SCHEDULER, m_config.getId(), device), callback);
 }
+
+void RemoteController::sendSpectrogram(const std::string& device, const nlohmann::json& json) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", SPECTROGRAM, m_config.getId(), device), json.dump(), 2); }
+void RemoteController::sendTransmission(const std::string& device, const nlohmann::json& json) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", TRANSMISSION, m_config.getId(), device), json.dump(), 2); }

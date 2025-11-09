@@ -2,20 +2,21 @@
 
 #include <config.h>
 #include <logger.h>
+#include <network/query.h>
 #include <utils/utils.h>
 
 constexpr auto LABEL = "spectogram";
 
 Spectrogram::Container::Container(int size) : m_lastDataSendTime(getTime()) { m_sum.resize(size); }
 
-Spectrogram::Spectrogram(const int itemSize, const Frequency sampleRate, DataController& dataController, std::function<Frequency()> getFrequency)
+Spectrogram::Spectrogram(const int itemSize, const Frequency sampleRate, std::function<Frequency()> getFrequency, std::function<void(const nlohmann::json&)> send)
     : gr::sync_block("Spectrogram", gr::io_signature::make(1, 1, sizeof(float) * itemSize), gr::io_signature::make(0, 0, 0)),
       m_inputSize(itemSize),
       m_outputSize(std::min(SPECTROGRAM_MAX_FFT, getFft(sampleRate, SPECTROGRAM_PREFERRED_MAX_STEP))),
       m_decimatorFactor(m_inputSize / m_outputSize),
       m_sampleRate(sampleRate),
-      m_dataController(dataController),
-      m_getFrequency(getFrequency) {
+      m_getFrequency(getFrequency),
+      m_send(send) {
   const auto step = m_sampleRate / m_outputSize;
   Logger::info(
       LABEL,
@@ -67,7 +68,8 @@ void Spectrogram::send(Container& container) {
     for (int j = 0; j < m_outputSize; ++j) {
       tmp[j] = container.m_sum[j] / container.m_counter;
     }
-    m_dataController.pushSpectrogram(now, frequency, m_sampleRate, tmp.data(), m_outputSize);
+    SpectrogramQuery spectrogram("", now, frequency, m_sampleRate, encode_base64(tmp.data(), m_outputSize));
+    m_send(spectrogram);
     std::memset(container.m_sum.data(), 0, sizeof(float) * container.m_sum.size());
     container.m_counter = 0;
     container.m_lastDataSendTime = now;

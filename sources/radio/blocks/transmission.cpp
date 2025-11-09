@@ -12,6 +12,7 @@ Transmission::Transmission(
     const int itemSize,
     const int groupSize,
     TransmissionNotification& notification,
+    std::function<Frequency()> getFrequency,
     std::function<Frequency(const Index index)> indexToFrequency,
     std::function<Frequency(const Index index)> indexToShift,
     std::function<bool(const int Index)> isIndexInRange)
@@ -22,6 +23,7 @@ Transmission::Transmission(
       m_groupSize(groupSize),
       m_averager(itemSize, GROUPING_Y),
       m_notification(notification),
+      m_getFrequency(getFrequency),
       m_indexToFrequency(indexToFrequency),
       m_indexToShift(indexToShift),
       m_isIndexInRange(isIndexInRange) {
@@ -169,8 +171,9 @@ std::vector<Recording> Transmission::getSortedTransmissions(const std::chrono::m
   std::sort(indexes.begin(), indexes.end(), [this](const Index& i1, const Index& i2) { return m_signals.at(i1).getPower() > m_signals.at(i2).getPower(); });
   std::vector<Recording> transmissions;
   for (const auto& index : indexes) {
-    const auto frequency = getTunedFrequency(m_indexToShift(index), m_config.recordingTuningStep());
-    transmissions.emplace_back(frequency, m_signals.at(index).needFlush(now));
+    const auto deviceFrequency = m_getFrequency();
+    const auto shiftFrequency = getTunedFrequency(m_indexToShift(index), m_config.recordingTuningStep());
+    transmissions.emplace_back("scanner", "", deviceFrequency, deviceFrequency + shiftFrequency, m_config.recordingBandwidth(), "", m_signals.at(index).needFlush(now));
   }
   return transmissions;
 }

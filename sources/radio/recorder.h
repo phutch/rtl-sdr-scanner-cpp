@@ -1,8 +1,8 @@
 #pragma once
 
+#include <config.h>
 #include <gnuradio/blocks/rotator_cc.h>
 #include <gnuradio/top_block.h>
-#include <network/data_controller.h>
 #include <radio/blocks/blocker.h>
 #include <radio/blocks/buffer.h>
 #include <radio/blocks/file_sink.h>
@@ -20,12 +20,12 @@ class Recorder {
   Recorder(const Recorder&) = delete;
   Recorder& operator=(const Recorder&) = delete;
 
-  Recorder(const Config& config, std::shared_ptr<gr::top_block> tb, std::shared_ptr<gr::block> source, Frequency sampleRate, DataController& dataController);
+  Recorder(const Config& config, std::shared_ptr<gr::top_block> tb, std::shared_ptr<gr::block> source, Frequency sampleRate, std::function<void(const nlohmann::json&)> send);
   ~Recorder();
 
-  Frequency getShift();
+  Recording getRecording() const;
   bool isRecording();
-  void startRecording(Frequency frequency, Frequency shift);
+  void startRecording(const Recording& recording);
   void stopRecording();
   void flush();
   std::chrono::milliseconds getDuration() const;
@@ -33,9 +33,8 @@ class Recorder {
  private:
   const Config& m_config;
   const Frequency m_sampleRate;
-  Frequency m_frequency;
-  Frequency m_shift;
-  DataController& m_dataController;
+  Recording m_recording;
+  const std::function<void(const nlohmann::json&)> m_send;
 
   std::shared_ptr<Blocker> m_blocker;
   std::shared_ptr<gr::blocks::rotator_cc> m_shiftBlock;

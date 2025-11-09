@@ -25,6 +25,9 @@ class RemoteController {
   void schedulerQuery(const std::string& device, const std::string& query);
   void schedulerCallback(const std::string& device, const Mqtt::JsonCallback& callback);
 
+  void sendSpectrogram(const std::string& device, const nlohmann::json& json);
+  void sendTransmission(const std::string& device, const nlohmann::json& json);
+
  private:
   void listCallback(const std::string& data);
 

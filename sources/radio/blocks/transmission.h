@@ -20,6 +20,7 @@ class Transmission : virtual public gr::sync_block {
       const int itemSize,
       const int groupSize,
       TransmissionNotification& notification,
+      std::function<Frequency()> getFrequency,
       std::function<Frequency(const int index)> indexToFrequency,
       std::function<Frequency(const int index)> indexToShift,
       std::function<bool(const int Index)> isIndexInRange);
@@ -42,6 +43,7 @@ class Transmission : virtual public gr::sync_block {
   const int m_groupSize;
   Averager m_averager;
   TransmissionNotification& m_notification;
+  const std::function<Frequency()> m_getFrequency;
   const std::function<Frequency(const Index index)> m_indexToFrequency;
   const std::function<Frequency(const Index index)> m_indexToShift;
   const std::function<bool(const Index index)> m_isIndexInRange;

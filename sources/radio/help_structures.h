@@ -11,10 +11,15 @@
 using Frequency = int32_t;
 
 struct Recording {
-  Recording(const Frequency& shift, const bool& flush);
+  std::string source;
+  std::string name;
+  Frequency deviceFrequency;
+  Frequency recordingFrequency;
+  Frequency bandwidth;
+  std::string modulation;
+  bool flush;
 
-  Frequency m_shift;
-  bool m_flush;
+  Frequency shift() const { return recordingFrequency - deviceFrequency; }
 };
 
 using TransmissionNotification = Notification<std::vector<Recording>>;

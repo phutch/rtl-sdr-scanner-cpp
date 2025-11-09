@@ -11,9 +11,9 @@ TEST(Scheduler, Transmissions) {
   const Frequency f2(800);
   const Frequency f3(800);
 
-  scheduledTransmissions.emplace_back("", 100s, 200s, f1, 20, "");
-  scheduledTransmissions.emplace_back("", 150s, 200s, f2, 20, "");
-  scheduledTransmissions.emplace_back("", 250s, 300s, f3, 20, "");
+  scheduledTransmissions.emplace_back("", "", 100s, 200s, f1, 20, "");
+  scheduledTransmissions.emplace_back("", "", 150s, 200s, f2, 20, "");
+  scheduledTransmissions.emplace_back("", "", 250s, 300s, f3, 20, "");
 
   {
     const auto result = Scheduler::getTransmissions(10s, scheduledTransmissions);
@@ -71,30 +71,30 @@ TEST(Scheduler, Recordings) {
   const Frequency sampleRate(2000);
   const Frequency shift(100);
 
-  scheduledTransmissions.emplace_back("", 100s, 300s, f1, 100, "");
-  scheduledTransmissions.emplace_back("", 150s, 300s, f2, 100, "");
-  scheduledTransmissions.emplace_back("", 200s, 300s, f3, 100, "");
+  scheduledTransmissions.emplace_back("", "", 100s, 300s, f1, 100, "");
+  scheduledTransmissions.emplace_back("", "", 150s, 300s, f2, 100, "");
+  scheduledTransmissions.emplace_back("", "", 200s, 300s, f3, 100, "");
 
   {
     const auto result = Scheduler::getRecordings(125s, scheduledTransmissions, sampleRate, shift);
     EXPECT_EQ(result->first, FrequencyRange(6100, 8100));
     EXPECT_EQ(result->second.size(), 1);
-    EXPECT_EQ(result->second[0].m_shift, -100);
+    EXPECT_EQ(result->second[0].shift(), -100);
   }
   {
     const auto result = Scheduler::getRecordings(175s, scheduledTransmissions, sampleRate, shift);
     EXPECT_EQ(result->first, FrequencyRange(6100, 8100));
     EXPECT_EQ(result->second.size(), 2);
-    EXPECT_EQ(result->second[0].m_shift, -100);
-    EXPECT_EQ(result->second[1].m_shift, 400);
+    EXPECT_EQ(result->second[0].shift(), -100);
+    EXPECT_EQ(result->second[1].shift(), 400);
   }
   {
     const auto result = Scheduler::getRecordings(225s, scheduledTransmissions, sampleRate, shift);
     EXPECT_EQ(result->first, FrequencyRange(6100, 8100));
     EXPECT_EQ(result->second.size(), 3);
-    EXPECT_EQ(result->second[0].m_shift, -100);
-    EXPECT_EQ(result->second[1].m_shift, 400);
-    EXPECT_EQ(result->second[2].m_shift, 950);
+    EXPECT_EQ(result->second[0].shift(), -100);
+    EXPECT_EQ(result->second[1].shift(), 400);
+    EXPECT_EQ(result->second[2].shift(), 950);
   }
 }
 
@@ -108,18 +108,18 @@ TEST(Scheduler, RecordingsEdgeCase) {
   const Frequency sampleRate(2000);
   const Frequency shift(100);
 
-  scheduledTransmissions.emplace_back("", 200s, 300s, f1, 100, "");
-  scheduledTransmissions.emplace_back("", 200s, 300s, f2, 100, "");
-  scheduledTransmissions.emplace_back("", 200s, 300s, f3, 100, "");
-  scheduledTransmissions.emplace_back("", 200s, 300s, f4, 100, "");
-  scheduledTransmissions.emplace_back("", 200s, 300s, f5, 100, "");
+  scheduledTransmissions.emplace_back("", "", 200s, 300s, f1, 100, "");
+  scheduledTransmissions.emplace_back("", "", 200s, 300s, f2, 100, "");
+  scheduledTransmissions.emplace_back("", "", 200s, 300s, f3, 100, "");
+  scheduledTransmissions.emplace_back("", "", 200s, 300s, f4, 100, "");
+  scheduledTransmissions.emplace_back("", "", 200s, 300s, f5, 100, "");
 
   {
     const auto result = Scheduler::getRecordings(250s, scheduledTransmissions, sampleRate, shift);
     EXPECT_EQ(result->first, FrequencyRange(6100, 8100));
     EXPECT_EQ(result->second.size(), 3);
-    EXPECT_EQ(result->second[0].m_shift, -100);
-    EXPECT_EQ(result->second[1].m_shift, -950);
-    EXPECT_EQ(result->second[2].m_shift, 950);
+    EXPECT_EQ(result->second[0].shift(), -100);
+    EXPECT_EQ(result->second[1].shift(), -950);
+    EXPECT_EQ(result->second[2].shift(), 950);
   }
 }

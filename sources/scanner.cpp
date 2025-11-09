@@ -6,8 +6,8 @@
 constexpr auto LABEL = "scanner";
 constexpr auto LOOP_TIMEOUT = std::chrono::milliseconds(10);
 
-Scanner::Scanner(const Config& config, const Device& device, Mqtt& mqtt, RemoteController& remoteController, const int recordersCount)
-    : m_device(config, device, mqtt, m_notification, recordersCount),
+Scanner::Scanner(const Config& config, const Device& device, RemoteController& remoteController, const int recordersCount)
+    : m_device(config, device, remoteController, m_notification, recordersCount),
       m_scheduler(config, device, remoteController),
       m_ranges(splitRanges(device.ranges, getRangeSplitSampleRate(device.sample_rate))),
       m_isRunning(true),

@@ -13,7 +13,7 @@
 
 class Scanner {
  public:
-  Scanner(const Config& config, const Device& device, Mqtt& mqtt, RemoteController& remoteController, const int recordersCount);
+  Scanner(const Config& config, const Device& device, RemoteController& remoteController, const int recordersCount);
   ~Scanner();
 
  private:

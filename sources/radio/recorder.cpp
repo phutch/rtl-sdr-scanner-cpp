@@ -5,19 +5,15 @@
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/filter/rational_resampler.h>
 #include <logger.h>
+#include <network/query.h>
 #include <radio/blocks/file_sink.h>
 
 #include <limits>
 
 constexpr auto LABEL = "recorder";
 
-Recorder::Recorder(const Config& config, std::shared_ptr<gr::top_block> tb, std::shared_ptr<gr::block> source, Frequency sampleRate, DataController& dataController)
-    : m_config(config),
-      m_sampleRate(sampleRate),
-      m_frequency(std::numeric_limits<Frequency>::max()),
-      m_shift(std::numeric_limits<Frequency>::max()),
-      m_dataController(dataController),
-      m_connector(tb) {
+Recorder::Recorder(const Config& config, std::shared_ptr<gr::top_block> tb, std::shared_ptr<gr::block> source, Frequency sampleRate, std::function<void(const nlohmann::json&)> send)
+    : m_config(config), m_sampleRate(sampleRate), m_send(send), m_connector(tb) {
   std::vector<Block> blocks;
   m_blocker = std::make_shared<Blocker>(gr::io_signature::make(1, 1, sizeof(gr_complex)), true);
   m_shiftBlock = gr::blocks::rotator_cc::make();
@@ -26,13 +22,13 @@ Recorder::Recorder(const Config& config, std::shared_ptr<gr::top_block> tb, std:
   blocks.push_back(m_shiftBlock);
 
   Block lastResampler;
-  for (const auto& [factor1, factor2] : getResamplersFactors(m_sampleRate, config.recordingBandwidth(), RESAMPLER_THRESHOLD)) {
+  for (const auto& [factor1, factor2] : getResamplersFactors(m_sampleRate, m_recording.bandwidth, RESAMPLER_THRESHOLD)) {
     Logger::info(LABEL, "rational resampler factors: {}, {}", colored(GREEN, "{}", factor1), colored(GREEN, "{}", factor2));
     lastResampler = gr::filter::rational_resampler<gr_complex, gr_complex, gr_complex>::make(factor1, factor2);
     blocks.push_back(lastResampler);
   }
 
-  const auto samplesSize = roundUp(m_config.recordingBandwidth() * RECORDER_FLUSH_INTERVAL.count() / 1000, 4096);
+  const auto samplesSize = roundUp(m_recording.bandwidth * RECORDER_FLUSH_INTERVAL.count() / 1000, 4096);
   blocks.push_back(gr::blocks::complex_to_interleaved_char::make(true, 127.0));
   blocks.push_back(gr::blocks::stream_to_vector::make(sizeof(SimpleComplex), samplesSize));
   m_buffer = std::make_shared<Buffer<SimpleComplex>>("RecorderBuffer", samplesSize);
@@ -51,19 +47,18 @@ Recorder::~Recorder() {
   Logger::info(LABEL, "stoped");
 }
 
-Frequency Recorder::getShift() { return m_shift; }
+Recording Recorder::getRecording() const { return m_recording; }
 
 bool Recorder::isRecording() { return !m_blocker->isBlocking(); }
 
-void Recorder::startRecording(Frequency frequency, Frequency shift) {
+void Recorder::startRecording(const Recording& recording) {
   if (!isRecording()) {
     m_firstDataTime = getTime();
     m_lastDataTime = m_firstDataTime;
-    m_frequency = frequency;
-    m_shift = shift;
-    m_shiftBlock->set_phase_inc(2.0l * M_PIl * (static_cast<double>(-shift) / static_cast<float>(m_sampleRate)));
+    m_recording = recording;
+    m_shiftBlock->set_phase_inc(2.0l * M_PIl * (static_cast<double>(-recording.shift()) / static_cast<float>(m_sampleRate)));
     if (DEBUG_SAVE_RECORDING_RAW_IQ) {
-      m_rawFileSinkBlock->startRecording(getRawFileName("recording", "fc", frequency + shift, m_config.recordingBandwidth()));
+      m_rawFileSinkBlock->startRecording(getRawFileName("recording", "fc", recording.recordingFrequency, m_recording.bandwidth));
     }
     m_blocker->setBlocking(false);
     m_buffer->clear();
@@ -74,8 +69,6 @@ void Recorder::startRecording(Frequency frequency, Frequency shift) {
 
 void Recorder::stopRecording() {
   if (isRecording()) {
-    m_frequency = std::numeric_limits<Frequency>::max();
-    m_shift = std::numeric_limits<Frequency>::max();
     if (DEBUG_SAVE_RECORDING_RAW_IQ) {
       m_rawFileSinkBlock->stopRecording();
     }
@@ -92,7 +85,8 @@ void Recorder::flush() {
     m_rawFileSinkBlock->flush();
   }
   m_buffer->popSingleSample([this](const SimpleComplex* data, const int size, const std::chrono::milliseconds& time) {
-    m_dataController.pushTransmission(time, m_frequency + m_shift, m_config.recordingBandwidth(), data, size);
+    TransmissionQuery transmission(m_recording.source, m_recording.name, time, m_recording.recordingFrequency, m_recording.bandwidth, m_recording.modulation, encode_base64(data, size));
+    m_send(transmission);
   });
 }
 

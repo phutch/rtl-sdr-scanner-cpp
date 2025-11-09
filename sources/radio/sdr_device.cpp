@@ -14,15 +14,8 @@
 
 constexpr auto LABEL = "sdr";
 
-SdrDevice::SdrDevice(const Config& config, const Device& device, Mqtt& mqtt, TransmissionNotification& notification, const int recordersCount)
-    : m_sampleRate(device.sample_rate),
-      m_isInitialized(false),
-      m_frequencyRange({0, 0}),
-      m_dataController(mqtt, device.alias.empty() ? device.getName() : device.alias),
-      m_tb(gr::make_top_block("sdr")),
-      m_powerFileSink(nullptr),
-      m_rawIqFileSink(nullptr),
-      m_connector(m_tb) {
+SdrDevice::SdrDevice(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification, const int recordersCount)
+    : m_sampleRate(device.sample_rate), m_isInitialized(false), m_frequencyRange({0, 0}), m_tb(gr::make_top_block("sdr")), m_powerFileSink(nullptr), m_rawIqFileSink(nullptr), m_connector(m_tb) {
   Logger::info(LABEL, "starting");
   Logger::info(
       LABEL,
@@ -33,11 +26,11 @@ SdrDevice::SdrDevice(const Config& config, const Device& device, Mqtt& mqtt, Tra
       colored(GREEN, "{}", recordersCount));
 
   m_source = std::make_shared<SdrSource>(device);
-  setupChains(config, device, notification);
+  setupChains(config, device, remoteController, notification);
 
   Logger::info(LABEL, "recording bandwidth: {}", formatFrequency(config.recordingBandwidth()));
   for (int i = 0; i < recordersCount; ++i) {
-    m_recorders.push_back(std::make_unique<Recorder>(config, m_tb, m_source, m_sampleRate, m_dataController));
+    m_recorders.push_back(std::make_unique<Recorder>(config, m_tb, m_source, m_sampleRate, std::bind(&RemoteController::sendTransmission, remoteController, device.getName(), std::placeholders::_1)));
   }
 
   m_tb->start();
@@ -79,17 +72,17 @@ void SdrDevice::setFrequencyRange(FrequencyRange frequencyRange) {
   m_blocker->setBlocking(false);
 }
 
-void SdrDevice::updateRecordings(const std::vector<Recording> sortedShifts) {
-  const auto isWaitingForRecording = [&sortedShifts](const Frequency shift) {
-    return std::find_if(sortedShifts.begin(), sortedShifts.end(), [shift](const Recording shiftFlush) {
+void SdrDevice::updateRecordings(const std::vector<Recording> recordings) {
+  const auto isWaitingForRecording = [&recordings](const Frequency& frequency) {
+    return std::find_if(recordings.begin(), recordings.end(), [frequency](const Recording& recording) {
              // improve auto formatter
-             return shift == shiftFlush.m_shift;
-           }) != sortedShifts.end();
+             return frequency == recording.recordingFrequency;
+           }) != recordings.end();
   };
-  const auto getShiftRecorder = [this](const Frequency shift) {
-    return std::find_if(m_recorders.begin(), m_recorders.end(), [shift](const std::unique_ptr<Recorder>& recorder) {
+  const auto getRecorder = [this](const Frequency& frequency) {
+    return std::find_if(m_recorders.begin(), m_recorders.end(), [frequency](const std::unique_ptr<Recorder>& recorder) {
       // improve auto formatter
-      return recorder->getShift() == shift;
+      return frequency == recorder->getRecording().recordingFrequency;
     });
   };
   const auto getFreeRecorder = [this]() {
@@ -101,34 +94,33 @@ void SdrDevice::updateRecordings(const std::vector<Recording> sortedShifts) {
 
   for (auto& recorder : m_recorders) {
     if (recorder->isRecording()) {
-      const auto shift = recorder->getShift();
-      if (!isWaitingForRecording(shift)) {
+      if (!isWaitingForRecording(recorder->getRecording().recordingFrequency)) {
         recorder->stopRecording();
-        Logger::info(LABEL, "stop recorder, frequency: {}, time: {} ms", formatFrequency(getFrequency() + shift, RED), recorder->getDuration().count());
+        Logger::info(LABEL, "stop recorder, frequency: {}, time: {} ms", formatFrequency(recorder->getRecording().recordingFrequency, RED), recorder->getDuration().count());
       }
     }
   }
 
-  for (const auto& [shift, flush] : sortedShifts) {
-    const auto itRecorder = getShiftRecorder(shift);
+  for (const auto& recording : recordings) {
+    const auto itRecorder = getRecorder(recording.recordingFrequency);
     if (itRecorder != m_recorders.end()) {
       const auto& recorder = *itRecorder;
       if (!recorder->isRecording()) {
-        Logger::warn(LABEL, "start recorder that should be already started, frequency: {}", formatFrequency(getFrequency() + shift), GREEN);
+        Logger::warn(LABEL, "start recorder that should be already started, frequency: {}", formatFrequency(recording.recordingFrequency), GREEN);
       }
-      if (flush) {
+      if (recording.flush) {
         recorder->flush();
       }
     } else {
       const auto itFreeRecorder = getFreeRecorder();
       if (itFreeRecorder != m_recorders.end()) {
         const auto& freeRecorder = *itFreeRecorder;
-        freeRecorder->startRecording(getFrequency(), shift);
-        Logger::info(LABEL, "start recorder, frequency: {}", formatFrequency(getFrequency() + shift, GREEN));
+        freeRecorder->startRecording(recording);
+        Logger::info(LABEL, "start recorder, frequency: {}", formatFrequency(recording.recordingFrequency, GREEN));
       } else {
-        if (!ignoredTransmissions.count(shift)) {
-          Logger::info(LABEL, "no recorders available, frequency: {}", formatFrequency(getFrequency() + shift, YELLOW));
-          ignoredTransmissions.insert(shift);
+        if (!ignoredTransmissions.count(recording.recordingFrequency)) {
+          Logger::info(LABEL, "no recorders available, frequency: {}", formatFrequency(recording.recordingFrequency, YELLOW));
+          ignoredTransmissions.insert(recording.recordingFrequency);
         }
       }
     }
@@ -145,7 +137,7 @@ void SdrDevice::updateRecordings(const std::vector<Recording> sortedShifts) {
 
 Frequency SdrDevice::getFrequency() const { return m_frequencyRange.center(); }
 
-void SdrDevice::setupChains(const Config& config, const Device& device, TransmissionNotification& notification) {
+void SdrDevice::setupChains(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification) {
   const auto fftSize = getFft(m_sampleRate, SIGNAL_DETECTION_MAX_STEP);
   const auto step = static_cast<double>(m_sampleRate) / fftSize;
   const auto indexStep = static_cast<Frequency>(std::ceil(config.recordingBandwidth() / (static_cast<double>(m_sampleRate) / fftSize)));
@@ -161,10 +153,11 @@ void SdrDevice::setupChains(const Config& config, const Device& device, Transmis
   const auto fft = gr::fft::fft_v<gr_complex, true>::make(fftSize, gr::fft::window::hamming(fftSize), true);
   const auto psd = std::make_shared<PSD>(fftSize, m_sampleRate);
   m_noiseLearner = std::make_shared<NoiseLearner>(fftSize, std::bind(&SdrDevice::getFrequency, this), indexToFrequency);
-  m_transmission = std::make_shared<Transmission>(config, device, fftSize, indexStep, notification, indexToFrequency, indexToShift, isIndexInRange);
+  m_transmission = std::make_shared<Transmission>(config, device, fftSize, indexStep, notification, std::bind(&SdrDevice::getFrequency, this), indexToFrequency, indexToShift, isIndexInRange);
   m_connector.connect<Block>(m_source, s2c, m_blocker, decimator, fft, psd, m_noiseLearner, m_transmission);
 
-  const auto spectrogram = std::make_shared<Spectrogram>(fftSize, m_sampleRate, m_dataController, std::bind(&SdrDevice::getFrequency, this));
+  const auto spectrogram = std::make_shared<Spectrogram>(
+      fftSize, m_sampleRate, std::bind(&SdrDevice::getFrequency, this), std::bind(&RemoteController::sendSpectrogram, remoteController, device.getName(), std::placeholders::_1));
   m_connector.connect<Block>(psd, spectrogram);
 
   if (DEBUG_SAVE_FULL_POWER) {
