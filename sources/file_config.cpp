@@ -27,7 +27,7 @@ nlohmann::json FileConfig::toPrint(nlohmann::json json) {
     json["position"]["latitude"] = std::regex_replace(json["position"]["latitude"].get<std::string>(), regex, "$1.********");
     json["position"]["longitude"] = std::regex_replace(json["position"]["longitude"].get<std::string>(), regex, "$1.********");
   } catch (const std::exception& exception) {
-    Logger::warn(LABEL, "hide sensitive data exception: {}", colored(RED, "{}", exception.what()));
+    Logger::exception(LABEL, exception, SPDLOG_LOC, "hide sensitive data failed");
   }
   return json;
 }

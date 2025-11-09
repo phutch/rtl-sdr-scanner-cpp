@@ -27,7 +27,7 @@ Application::Application(nlohmann::json& tmpJson, const ArgConfig& argConfig)
         m_scanners.push_back(std::make_unique<Scanner>(m_config, device, m_mqtt, m_remoteController, m_config.recordersCount()));
       }
     } catch (const std::exception& exception) {
-      Logger::error(LABEL, "can not open device: {}, exception: {}", colored(RED, "{}", device.getName()), exception.what());
+      Logger::exception(LABEL, exception, SPDLOG_LOC, "open device failed: {}", device.getName());
     }
   }
   if (m_scanners.empty()) {
@@ -42,7 +42,7 @@ Application::Application(nlohmann::json& tmpJson, const ArgConfig& argConfig)
       m_tmpJson.clear();
       m_remoteController.setConfigResponse(true);
     } catch (const std::runtime_error& exception) {
-      Logger::warn(LABEL, "set config exception: {}", exception.what());
+      Logger::exception(LABEL, exception, SPDLOG_LOC, "set config failed");
       m_remoteController.setConfigResponse(false);
     }
   });
@@ -61,7 +61,7 @@ Application::Application(nlohmann::json& tmpJson, const ArgConfig& argConfig)
       m_tmpJson = json;
       m_remoteController.setConfigResponse(true);
     } catch (const std::runtime_error& exception) {
-      Logger::warn(LABEL, "set tmp config exception: {}", exception.what());
+      Logger::exception(LABEL, exception, SPDLOG_LOC, "set tmp config failed");
       m_remoteController.setConfigResponse(false);
     }
   });

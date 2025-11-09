@@ -82,7 +82,7 @@ bool SdrSource::setCenterFrequency(Frequency frequency) {
     try {
       m_device->setFrequency(SOAPY_SDR_RX, 0, frequency);
       return true;
-    } catch (std::exception& e) {
+    } catch (const std::exception&) {
     }
   }
   return false;

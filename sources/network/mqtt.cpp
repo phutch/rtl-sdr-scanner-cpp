@@ -106,7 +106,7 @@ void Mqtt::connect() {
       Logger::info(LABEL, "new session created");
     }
   } catch (const std::runtime_error& exception) {
-    Logger::warn(LABEL, "exception: {}", exception.what());
+    Logger::exception(LABEL, exception, SPDLOG_LOC, "connect failed");
   }
   if (m_client.is_connected()) {
     onConnected();
@@ -162,7 +162,7 @@ void Mqtt::onMessage(const std::string& topic, const std::string& data) {
         }
       }
     } catch (const std::exception& exception) {
-      Logger::warn(LABEL, "parse json exception: {}", colored(RED, "{}", exception.what()));
+      Logger::exception(LABEL, exception, SPDLOG_LOC, "parse message to json failed");
     }
   }
 }

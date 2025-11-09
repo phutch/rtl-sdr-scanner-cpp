@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     }
     Logger::info(LABEL, "{}", colored(GREEN, "{}", "stopped"));
   } catch (const std::exception& exception) {
-    Logger::error(LABEL, "exception: {}", exception.what());
+    Logger::exception(LABEL, exception, SPDLOG_LOC, "crash");
   }
   return 0;
 }

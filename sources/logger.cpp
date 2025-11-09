@@ -28,3 +28,5 @@ void Logger::Logger::configure(
   spdlog::flush_on(spdlog::level::warn);
   spdlog::set_default_logger(logger);
 }
+
+bool Logger::isColorLogEnabled() { return _isColorLogEnabled; }

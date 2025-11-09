@@ -128,7 +128,7 @@ void SdrDeviceReader::updateDevices(std::vector<Device>& devices) {
         devices.push_back(createDevice(results[i]));
       }
     } catch (const std::exception& exception) {
-      Logger::warn(LABEL, "scan device exception: {}", exception.what());
+      Logger::exception(LABEL, exception, SPDLOG_LOC, "update device failed");
     }
   }
 }
