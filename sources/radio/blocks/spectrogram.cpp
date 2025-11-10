@@ -7,7 +7,7 @@
 
 constexpr auto LABEL = "spectogram";
 
-Spectrogram::Container::Container(int size) : m_lastDataSendTime(getTime()) { m_sum.resize(size); }
+Spectrogram::Container::Container(int size) : m_counter(0), m_lastDataSendTime(getTime()) { m_sum.resize(size); }
 
 Spectrogram::Spectrogram(const int itemSize, const Frequency sampleRate, std::function<Frequency()> getFrequency, std::function<void(const nlohmann::json&)> send)
     : gr::sync_block("Spectrogram", gr::io_signature::make(1, 1, sizeof(float) * itemSize), gr::io_signature::make(0, 0, 0)),
