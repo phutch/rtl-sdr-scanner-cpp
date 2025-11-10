@@ -64,18 +64,6 @@ bool SdrSource::stop() {
   return true;
 }
 
-void SdrSource::resetBuffers() {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  if (m_configDevice.driver == "rtlsdr") {
-    m_device->setSampleRate(SOAPY_SDR_RX, 0, m_configDevice.sample_rate);
-  } else {
-    m_device->deactivateStream(m_stream);
-    m_device->closeStream(m_stream);
-    m_stream = m_device->setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32);
-    m_device->activateStream(m_stream);
-  }
-}
-
 bool SdrSource::setCenterFrequency(Frequency frequency) {
   std::lock_guard<std::mutex> lock(m_mutex);
   for (int i = 0; i < 10; ++i) {

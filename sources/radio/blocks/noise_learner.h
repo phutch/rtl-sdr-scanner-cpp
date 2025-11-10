@@ -23,7 +23,6 @@ class NoiseLearner : virtual public gr::sync_block {
   NoiseLearner(const int itemSize, std::function<Frequency()> getFrequency, std::function<Frequency(const int index)> indexToFrequency);
 
   int work(int noutput_items, gr_vector_const_void_star& input_items, gr_vector_void_star& output_items) override;
-  void resetBuffers();
 
  private:
   const int m_itemSize;

@@ -41,21 +41,6 @@ int Transmission::work(int noutput_items, gr_vector_const_void_star& input_items
   return noutput_items;
 }
 
-void Transmission::resetBuffers() {
-  std::unique_lock<std::mutex> lock(m_mutex);
-  for (const auto& [index, signal] : m_signals) {
-    const auto bestTunedFrequency = getTunedFrequency(m_indexToFrequency(index), m_config.recordingTuningStep());
-    Logger::info(
-        LABEL,
-        "signal: {}, stop: {}, center: {}",
-        formatFrequency(m_indexToFrequency(index), BROWN),
-        formatFrequency(bestTunedFrequency, CYAN),
-        formatFrequency(m_indexToFrequency(signal.getIndex()), MAGENTA));
-  }
-  m_signals.clear();
-  m_averager.reset();
-}
-
 void Transmission::process(const float* power) {
   m_averager.push(power);
   const auto bufferPower = m_averager.average();

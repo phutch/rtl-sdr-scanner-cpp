@@ -26,7 +26,6 @@ class Transmission : virtual public gr::sync_block {
       std::function<bool(const int Index)> isIndexInRange);
 
   int work(int noutput_items, gr_vector_const_void_star& input_items, gr_vector_void_star& output_items) override;
-  void resetBuffers();
 
  private:
   void process(const float* power);

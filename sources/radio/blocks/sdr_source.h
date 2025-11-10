@@ -17,7 +17,6 @@ class SdrSource : virtual public gr::sync_block {
   bool start() override;
   bool stop() override;
 
-  void resetBuffers();
   bool setCenterFrequency(Frequency frequency);
 
  private:

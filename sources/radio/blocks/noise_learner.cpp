@@ -65,8 +65,3 @@ int NoiseLearner::work(int noutput_items, gr_vector_const_void_star& input_items
 
   return noutput_items;
 }
-
-void NoiseLearner::resetBuffers() {
-  std::unique_lock<std::mutex> lock(m_mutex);
-  m_noise.clear();
-}
