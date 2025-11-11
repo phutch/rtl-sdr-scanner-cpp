@@ -8,10 +8,10 @@
 
 constexpr auto LABEL = "file_config";
 
-FileConfig FileConfig::fromJson(nlohmann::json json) {
+FileConfig FileConfig::fromJson(nlohmann::json json, bool enumerateRemote) {
   ConfigMigrator::update(json);
   FileConfig fileConfig(json);
-  SdrDeviceReader::updateDevices(fileConfig.devices);
+  SdrDeviceReader::updateDevices(fileConfig.devices, enumerateRemote);
   return fileConfig;
 }
 

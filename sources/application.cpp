@@ -10,7 +10,7 @@ Application::Application(nlohmann::json& tmpJson, const ArgConfig& argConfig)
       m_argConfig(argConfig),
       m_tmpJson(tmpJson),
       m_fileJson(m_tmpJson.empty() ? readFromFile(m_argConfig.configFile, static_cast<nlohmann::json>(FileConfig())) : m_tmpJson),
-      m_fileConfig(FileConfig::fromJson(m_fileJson)),
+      m_fileConfig(FileConfig::fromJson(m_fileJson, m_argConfig.enumerateRemote)),
       m_config(m_argConfig, m_fileConfig),
       m_mqtt(m_config),
       m_remoteController(m_config, m_mqtt) {

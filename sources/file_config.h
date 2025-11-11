@@ -43,7 +43,7 @@ struct FileConfig {
   int version = 1;
   int workers = 0;
 
-  static FileConfig fromJson(nlohmann::json json);
+  static FileConfig fromJson(nlohmann::json json, bool enumerateRemote);
   static nlohmann::json toSave(nlohmann::json json);
   static nlohmann::json toPrint(nlohmann::json json);
 };

@@ -12,4 +12,5 @@ struct ArgConfig {
   std::string mqttUser;
   std::string mqttPassword;
   std::string workDir = ".";
+  bool enumerateRemote = false;
 };

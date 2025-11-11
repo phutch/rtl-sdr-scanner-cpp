@@ -112,10 +112,30 @@ Device SdrDeviceReader::createDevice(const SoapySDR::Kwargs args) {
   return device;
 }
 
-void SdrDeviceReader::updateDevices(std::vector<Device>& devices) {
+SoapySDR::KwargsList SdrDeviceReader::enumerateDevices(bool enumerateRemote) {
+  SoapySDR::KwargsList results = SoapySDR::Device::enumerate(enumerateRemote ? "" : "remote=");
+  Logger::info(LABEL, "total devices: {}", colored(GREEN, "{}", results.size()));
+  try {
+    std::map<std::string, int> serialCount;
+    for (const auto& result : results) {
+      serialCount[result.at("serial")]++;
+    }
+    const auto it = std::remove_if(results.begin(), results.end(), [&serialCount](const auto& result) {
+      auto serial = result.at("serial");
+      auto driver = result.at("driver");
+      return 1 < serialCount[serial] && driver == "remote";
+    });
+    results.erase(it, results.end());
+  } catch (const std::exception& exception) {
+    Logger::exception(LABEL, exception, SPDLOG_LOC, "enumerate devices failed");
+  }
+  Logger::info(LABEL, "devices after filtering: {}", colored(GREEN, "{}", results.size()));
+  return results;
+}
+
+void SdrDeviceReader::updateDevices(std::vector<Device>& devices, bool enumerateRemote) {
   Logger::info(LABEL, "scanning connected devices");
-  const SoapySDR::KwargsList results = SoapySDR::Device::enumerate("remote=");
-  Logger::info(LABEL, "found {} devices:", colored(GREEN, "{}", results.size()));
+  const SoapySDR::KwargsList results = enumerateDevices(enumerateRemote);
 
   for (const auto& args : results) {
     try {
