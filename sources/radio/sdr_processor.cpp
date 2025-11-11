@@ -5,12 +5,14 @@
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/fft/fft_v.h>
 #include <gnuradio/fft/window.h>
+#include <network/query.h>
 #include <radio/blocks/decimator.h>
 #include <radio/blocks/noise_learner.h>
 #include <radio/blocks/psd.h>
 #include <radio/blocks/spectrogram.h>
 #include <radio/blocks/transmission.h>
 #include <utils/radio_utils.h>
+#include <utils/utils.h>
 
 constexpr auto LABEL = "processor";
 
@@ -25,6 +27,10 @@ SdrProcessor::SdrProcessor(
     : m_connector(connector) {
   const auto getFrequency = [frequencyRange]() { return frequencyRange.center(); };
   const auto sampleRate = device.sample_rate;
+  const auto sendSpectrogram = [&remoteController, device, sampleRate](const std::chrono::milliseconds& time, const Frequency& frequency, const std::vector<int8_t>& data) {
+    SpectrogramQuery spectrogram(device.alias.empty() ? SCANNER_SOURCE_NAME : GAIN_TESTER_SOURCE_NAME, time, frequency, sampleRate, encode_base64(data.data(), data.size()));
+    remoteController.sendSpectrogram(device, spectrogram);
+  };
 
   const auto fftSize = getFft(sampleRate, SIGNAL_DETECTION_MAX_STEP);
   const auto step = static_cast<double>(sampleRate) / fftSize;
@@ -43,7 +49,7 @@ SdrProcessor::SdrProcessor(
   const auto transmission = std::make_shared<Transmission>(config, device, fftSize, indexStep, notification, getFrequency, indexToFrequency, indexToShift, isIndexInRange);
   m_connector.connect<Block>(source, s2c, decimator, fft, psd, noiseLearner, transmission);
 
-  const auto spectrogram = std::make_shared<Spectrogram>(fftSize, sampleRate, getFrequency, std::bind(&RemoteController::sendSpectrogram, remoteController, device.getName(), std::placeholders::_1));
+  const auto spectrogram = std::make_shared<Spectrogram>(fftSize, sampleRate, getFrequency, sendSpectrogram);
   m_connector.connect<Block>(psd, spectrogram);
 
   if (DEBUG_SAVE_FULL_POWER) {

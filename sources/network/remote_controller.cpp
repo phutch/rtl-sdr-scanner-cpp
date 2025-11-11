@@ -32,10 +32,14 @@ void RemoteController::resetTmpConfigResponse(const bool& success) { m_mqtt.publ
 void RemoteController::setTmpConfigQuery(const Mqtt::JsonCallback& callback) { m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}", TMP_CONFIG, m_config.getId()), callback); }
 void RemoteController::setTmpConfigResponse(const bool& success) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", TMP_CONFIG, m_config.getId(), success ? SUCCESS : FAILED), "", 2); }
 
-void RemoteController::schedulerQuery(const std::string& device, const std::string& query) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}/get", SCHEDULER, m_config.getId(), device), query, 2); }
-void RemoteController::schedulerCallback(const std::string& device, const Mqtt::JsonCallback& callback) {
-  m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}/{}/set", SCHEDULER, m_config.getId(), device), callback);
+void RemoteController::schedulerQuery(const Device& device, const std::string& query) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}/get", SCHEDULER, m_config.getId(), device.getName()), query, 2); }
+void RemoteController::schedulerCallback(const Device& device, const Mqtt::JsonCallback& callback) {
+  m_mqtt.setJsonMessageCallback(fmt::format("sdr/{}/{}/{}/set", SCHEDULER, m_config.getId(), device.getName()), callback);
 }
 
-void RemoteController::sendSpectrogram(const std::string& device, const nlohmann::json& json) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", SPECTROGRAM, m_config.getId(), device), json.dump(), 2); }
-void RemoteController::sendTransmission(const std::string& device, const nlohmann::json& json) { m_mqtt.publish(fmt::format("sdr/{}/{}/{}", TRANSMISSION, m_config.getId(), device), json.dump(), 2); }
+void RemoteController::sendSpectrogram(const Device& device, const nlohmann::json& json) {
+  m_mqtt.publish(fmt::format("sdr/{}/{}/{}", SPECTROGRAM, m_config.getId(), device.getAliasName()), json.dump(), 2);
+}
+void RemoteController::sendTransmission(const Device& device, const nlohmann::json& json) {
+  m_mqtt.publish(fmt::format("sdr/{}/{}/{}", TRANSMISSION, m_config.getId(), device.getAliasName()), json.dump(), 2);
+}

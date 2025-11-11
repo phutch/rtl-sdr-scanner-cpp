@@ -36,6 +36,12 @@ constexpr auto SPECTROGRAM_PREFERRED_MAX_STEP = 1000;                        // 
 constexpr auto SPECTROGRAM_MAX_FFT = 16384;                                  // spectrogram fft limit
 constexpr auto SPECTROGRAM_SEND_INTERVAL = std::chrono::milliseconds(1000);  // send spectrogram data interval
 
+// SOURCE AND RECORDING NAMES
+constexpr auto GAIN_TESTER_SOURCE_NAME = "gain tester";
+constexpr auto GAIN_TESTER_RECORDING_NAME = "auto";
+constexpr auto SCANNER_SOURCE_NAME = "scanner";
+constexpr auto SCANNER_RECORDING_NAME = "auto";
+
 class Config {
  public:
   Config(const ArgConfig& argConfig, const FileConfig& fileConfig);

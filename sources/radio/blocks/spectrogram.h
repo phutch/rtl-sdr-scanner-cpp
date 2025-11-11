@@ -15,8 +15,10 @@ class Spectrogram : virtual public gr::sync_block {
     std::chrono::milliseconds m_lastDataSendTime;
   };
 
+  using SendFunction = std::function<void(const std::chrono::milliseconds&, const Frequency&, const std::vector<int8_t>&)>;
+
  public:
-  Spectrogram(const int itemSize, const Frequency sampleRate, std::function<Frequency()> getFrequency, std::function<void(const nlohmann::json&)> send);
+  Spectrogram(const int itemSize, const Frequency sampleRate, std::function<Frequency()> getFrequency, SendFunction send);
 
   int work(int noutput_items, gr_vector_const_void_star& input_items, gr_vector_void_star& output_items) override;
 
@@ -29,6 +31,6 @@ class Spectrogram : virtual public gr::sync_block {
   const int m_decimatorFactor;
   const Frequency m_sampleRate;
   const std::function<Frequency()> m_getFrequency;
-  const std::function<void(const nlohmann::json&)> m_send;
+  const SendFunction m_send;
   std::map<Frequency, Container> m_containers;
 };

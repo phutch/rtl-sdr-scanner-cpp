@@ -65,7 +65,7 @@ std::optional<std::pair<FrequencyRange, std::vector<Recording>>> Scheduler::getR
 }
 
 void Scheduler::worker() {
-  m_remoteController.schedulerCallback(m_device.getName(), std::bind(&Scheduler::callback, this, _1));
+  m_remoteController.schedulerCallback(m_device, std::bind(&Scheduler::callback, this, _1));
   while (m_isRunning) {
     const auto now = getTime();
     if (m_isRefreshEnabled && m_lastUpdateTime + UPDATE_INTERVAL <= now) {
@@ -79,7 +79,7 @@ void Scheduler::worker() {
 void Scheduler::query() {
   Logger::info(LABEL, "send query");
   const SchedulerQuery query(m_config.latitude(), m_config.longitude(), m_config.altitude(), m_device.satellites, m_device.crontabs);
-  m_remoteController.schedulerQuery(m_device.getName(), static_cast<nlohmann::json>(query).dump());
+  m_remoteController.schedulerQuery(m_device, static_cast<nlohmann::json>(query).dump());
 }
 
 void Scheduler::callback(const nlohmann::json& json) {

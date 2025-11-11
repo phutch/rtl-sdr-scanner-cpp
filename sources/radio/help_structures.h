@@ -84,6 +84,7 @@ struct Device {
   std::vector<Crontab> crontabs;
 
   std::string getName() const { return driver + "_" + serial; }
+  std::string getAliasName() const { return alias.empty() ? getName() : alias; }
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(
     Device, connected, enabled, gains, serial, driver, alias, sample_rate, ranges, start_recording_level, stop_recording_level, satellites, sample_rates, crontabs)

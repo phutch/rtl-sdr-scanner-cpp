@@ -158,7 +158,9 @@ std::vector<Recording> Transmission::getSortedTransmissions(const std::chrono::m
   for (const auto& index : indexes) {
     const auto deviceFrequency = m_getFrequency();
     const auto shiftFrequency = getTunedFrequency(m_indexToShift(index), m_config.recordingTuningStep());
-    transmissions.emplace_back("scanner", "", deviceFrequency, deviceFrequency + shiftFrequency, m_config.recordingBandwidth(), "", m_signals.at(index).needFlush(now));
+    const auto source = m_device.alias.empty() ? SCANNER_SOURCE_NAME : GAIN_TESTER_SOURCE_NAME;
+    const auto name = m_device.alias.empty() ? SCANNER_RECORDING_NAME : GAIN_TESTER_RECORDING_NAME;
+    transmissions.emplace_back(source, name, deviceFrequency, deviceFrequency + shiftFrequency, m_config.recordingBandwidth(), "", m_signals.at(index).needFlush(now));
   }
   return transmissions;
 }

@@ -2,6 +2,7 @@
 
 #include <config.h>
 #include <network/mqtt.h>
+#include <radio/help_structures.h>
 
 #include <functional>
 #include <nlohmann/json.hpp>
@@ -22,11 +23,11 @@ class RemoteController {
   void setTmpConfigQuery(const Mqtt::JsonCallback& callback);
   void setTmpConfigResponse(const bool& success);
 
-  void schedulerQuery(const std::string& device, const std::string& query);
-  void schedulerCallback(const std::string& device, const Mqtt::JsonCallback& callback);
+  void schedulerQuery(const Device& device, const std::string& query);
+  void schedulerCallback(const Device& device, const Mqtt::JsonCallback& callback);
 
-  void sendSpectrogram(const std::string& device, const nlohmann::json& json);
-  void sendTransmission(const std::string& device, const nlohmann::json& json);
+  void sendSpectrogram(const Device& device, const nlohmann::json& json);
+  void sendTransmission(const Device& device, const nlohmann::json& json);
 
  private:
   void listCallback(const std::string& data);
