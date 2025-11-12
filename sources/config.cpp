@@ -42,9 +42,10 @@ std::vector<FrequencyRange> Config::ignoredRanges() const {
   return ranges;
 }
 int Config::recordersCount() const {
-  const auto max_workers = static_cast<int>(std::thread::hardware_concurrency() / 2);
+  const auto max_workers = static_cast<int>(std::thread::hardware_concurrency());
+  const auto auto_workers = max_workers / 2;
   const auto workers = std::max(0, std::min(m_fileConfig.workers, max_workers));
-  return workers == 0 ? max_workers : workers;
+  return workers == 0 ? auto_workers : workers;
 }
 Frequency Config::recordingBandwidth() const { return m_fileConfig.recording.min_sample_rate; }
 std::chrono::milliseconds Config::recordingMinTime() const { return m_fileConfig.recording.min_time_ms; }
